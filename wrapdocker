@@ -87,8 +87,9 @@ rm -rf /var/run/docker.pid
 # otherwise, spawn a shell as well
 if [ "$PORT" ]
 then
-	exec docker -d -H 0.0.0.0:$PORT -H unix://var/run/docker.sock \
-		$DOCKER_DAEMON_ARGS
+	docker -d -H 0.0.0.0:$PORT -H unix://var/run/docker.sock \
+		$DOCKER_DAEMON_ARGS &
+	exec /trap_and_stop.sh
 else
 	if [ "$LOG" == "file" ]
 	then
@@ -106,5 +107,6 @@ else
 		sleep 1
 	done
 	[[ $1 ]] && exec "$@"
-	exec bash --login
+	ln -s /var/run/docker.pid /var/run/docker-ssd.pid
+	exec /trap_and_stop.sh
 fi
